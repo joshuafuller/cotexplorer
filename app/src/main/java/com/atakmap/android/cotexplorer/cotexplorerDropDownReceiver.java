@@ -2,16 +2,23 @@
 package com.atakmap.android.cotexplorer;
 
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.text.InputType;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.BackgroundColorSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 
@@ -19,17 +26,22 @@ import com.atakmap.android.cot.CotMapComponent;
 import com.atakmap.android.gui.AlertDialogHelper;
 import com.atakmap.android.gui.EditText;
 import com.atakmap.android.importexport.CotEventFactory;
+import com.atakmap.android.ipc.AtakBroadcast;
+import com.atakmap.android.maps.MapItem;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.android.cotexplorer.plugin.R;
 import com.atakmap.android.dropdown.DropDown.OnStateListener;
 import com.atakmap.android.dropdown.DropDownReceiver;
 
+import com.atakmap.android.toolbar.ToolManagerBroadcastReceiver;
+import com.atakmap.android.util.AbstractMapItemSelectionTool;
 import com.atakmap.comms.CommsLogger;
 import com.atakmap.comms.CommsMapComponent;
 import com.atakmap.coremap.cot.event.CotEvent;
 
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,6 +51,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class cotexplorerDropDownReceiver extends DropDownReceiver implements
@@ -51,12 +65,15 @@ public class cotexplorerDropDownReceiver extends DropDownReceiver implements
     private final Context appContext;
     private final MapView mapView;
     private final View mainView;
+    final InspectionMapItemSelectionTool imis;
 
     private boolean paused = false;
     private TextView cotexplorerlog = null;
-    private Button sendBtn, clearBtn, pauseBtn, filterBtn, saveBtn = null;
+    private Button sendBtn, clearBtn, pauseBtn, saveBtn, inspectBtn = null;
+    private ImageButton filterBtn = null;
     private SharedPreferences _sharedPreference = null;
     private String cotFilter = "";
+    private List<String> fullLog = new ArrayList<>();
 
     /**************************** CONSTRUCTOR *****************************/
 
@@ -66,6 +83,7 @@ public class cotexplorerDropDownReceiver extends DropDownReceiver implements
         this.pluginContext = context;
         this.appContext = mapView.getContext();
         this.mapView = mapView;
+        this.imis = new InspectionMapItemSelectionTool(); // Initialize here
 
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.mainView = inflater.inflate(R.layout.main_layout, null);
@@ -75,6 +93,7 @@ public class cotexplorerDropDownReceiver extends DropDownReceiver implements
         filterBtn = mainView.findViewById(R.id.filterBtn);
         saveBtn = mainView.findViewById(R.id.saveBtn);
         sendBtn = mainView.findViewById(R.id.sendBtn);
+        inspectBtn = mainView.findViewById(R.id.inspectBtn);
 
         _sharedPreference = PreferenceManager.getDefaultSharedPreferences(mapView.getContext().getApplicationContext());
 
@@ -147,20 +166,107 @@ public class cotexplorerDropDownReceiver extends DropDownReceiver implements
                 input.setInputType(InputType.TYPE_CLASS_TEXT);
                 alertBuilder.setView(input);
 
-                alertBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                            cotFilter = input.getText().toString();
-                    }
+                alertBuilder.setNegativeButton("OK", (dialogInterface, i) -> {
+                    cotFilter = input.getText().toString();
+                    applyFilter(); // Apply the new filter to update TextView
                 });
-                alertBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        return;
-                    }
+
+                alertBuilder.setNeutralButton("Cancel", (dialogInterface, i) -> {});
+
+                alertBuilder.setPositiveButton("Clear", (dialogInterface, i) -> {
+                    cotFilter = ""; // Clear the filter
+                    applyFilter();  // Apply the empty filter to show all logs
                 });
+
                 alertBuilder.setCancelable(true);
                 alertBuilder.show();
+            }
+        });
+
+        final BroadcastReceiver inspectionReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                AtakBroadcast.getInstance().unregisterReceiver(this);
+                final Button itemInspect = mainView
+                        .findViewById(R.id.inspectBtn);
+                itemInspect.setSelected(false);
+
+                String uid = intent.getStringExtra("uid");
+                if (uid == null)
+                    return;
+
+                MapItem mi = getMapView().getMapItem(uid);
+
+                if (mi == null)
+                    return;
+
+                com.atakmap.coremap.log.Log.d(TAG, "class: " + mi.getClass());
+                com.atakmap.coremap.log.Log.d(TAG, "type: " + mi.getType());
+
+                final CotEvent cotEvent = CotEventFactory
+                        .createCotEvent(mi);
+
+                String val;
+                if (cotEvent != null)
+                    val = cotEvent.toString();
+                else if (mi.hasMetaValue("nevercot"))
+                    val = "map item set to never persist (nevercot)";
+                else
+                    val = "error turning a map item into CoT";
+
+                AlertDialog.Builder builderSingle = new AlertDialog.Builder(
+                        getMapView().getContext());
+                TextView showText = new TextView(getMapView().getContext());
+                showText.setText(val);
+                showText.setTextIsSelectable(true);
+                showText.setPadding(32, 32, 32, 32); // Add padding (left, top, right, bottom) in pixels
+                showText.setOnLongClickListener(new View.OnLongClickListener() {
+
+                    @Override
+                    public boolean onLongClick(View v) {
+                        // Copy the Text to the clipboard
+                        ClipboardManager manager = (ClipboardManager) getMapView()
+                                .getContext()
+                                .getSystemService(Context.CLIPBOARD_SERVICE);
+                        TextView showTextParam = (TextView) v;
+                        manager.setText(showTextParam.getText());
+                        Toast.makeText(v.getContext(),
+                                "copied the data", Toast.LENGTH_SHORT).show();
+                        return true;
+                    }
+                });
+
+                builderSingle.setTitle("Resulting CoT");
+                builderSingle.setView(showText);
+                builderSingle.setPositiveButton("Close", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss(); // Close the dialog
+                    }
+                });
+                builderSingle.show();
+            }
+        };
+
+        inspectBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean val = inspectBtn.isSelected();
+                if (val) {
+                    imis.requestEndTool();
+                } else {
+
+                    AtakBroadcast.getInstance().registerReceiver(
+                            inspectionReceiver,
+                            new AtakBroadcast.DocumentedIntentFilter(
+                                    "com.atakmap.android.cotexplorer.InspectionMapItemSelectionTool.Finished"));
+                    Bundle extras = new Bundle();
+                    ToolManagerBroadcastReceiver.getInstance().startTool(
+                            "com.atakmap.android.cotexplorer.InspectionMapItemSelectionTool",
+                            extras);
+
+                }
+                inspectBtn.setSelected(!val);
             }
         });
 
@@ -179,17 +285,60 @@ public class cotexplorerDropDownReceiver extends DropDownReceiver implements
 
     private void writeLog(final String log, final String flag) {
         if (paused) return;
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                boolean send = _sharedPreference.getBoolean("plugin_cotexplorer_send", true);
-                boolean recv = _sharedPreference.getBoolean("plugin_cotexplorer_recv", true);
-                if (flag.equalsIgnoreCase("S") && send)
-                    cotexplorerlog.setText(String.format("%s: %s\n----------\n", flag, log) + cotexplorerlog.getText());
-                else if (flag.equalsIgnoreCase("R") && recv)
-                    cotexplorerlog.setText(String.format("%s: %s\n----------\n", flag, log) + cotexplorerlog.getText());
-            }
+
+        new Handler(Looper.getMainLooper()).post(() -> {
+            // Add the log entry to the full log list
+            fullLog.add(String.format("%s: %s", flag, log));
+
+            // Apply the current filter and update the TextView
+            applyFilter();
         });
+    }
+
+    private void applyFilter() {
+        SpannableStringBuilder filteredLog = new SpannableStringBuilder();
+
+        for (String log : fullLog) {
+            if (cotFilter.isEmpty() || log.contains(cotFilter)) {
+                if (!cotFilter.isEmpty()) {
+                    // Highlight the matching part
+                    int start = log.indexOf(cotFilter);
+                    int end = start + cotFilter.length();
+
+                    SpannableString spannableLog = new SpannableString(log);
+                    spannableLog.setSpan(
+                            new BackgroundColorSpan(0x80FFFF33), // Yellow background
+                            start,
+                            end,
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    );
+                    filteredLog.append(spannableLog);
+                } else {
+                    // No filter, append as plain text
+                    filteredLog.append(log);
+                }
+                filteredLog.append("\n----------\n");
+            }
+        }
+
+        cotexplorerlog.setText(filteredLog);
+    }
+
+    final class InspectionMapItemSelectionTool
+            extends AbstractMapItemSelectionTool {
+        public InspectionMapItemSelectionTool() {
+            super(getMapView(),
+                    "com.atakmap.android.cotexplorer.InspectionMapItemSelectionTool",
+                    "com.atakmap.android.cotexplorer.InspectionMapItemSelectionTool.Finished",
+                    "Select Map Item on the screen",
+                    "Invalid Selection");
+        }
+
+        @Override
+        protected boolean isItem(MapItem mi) {
+            return true;
+        }
+
     }
 
     @Override
