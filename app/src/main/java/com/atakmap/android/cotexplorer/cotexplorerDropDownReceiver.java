@@ -252,7 +252,7 @@ public class cotexplorerDropDownReceiver extends DropDownReceiver implements
                     }
                 });
 
-                builderSingle.setTitle("Resulting CoT");
+                builderSingle.setTitle("CoT Inspector");
                 builderSingle.setView(showText);
                 builderSingle.setPositiveButton("Close", new DialogInterface.OnClickListener() {
                     @Override
