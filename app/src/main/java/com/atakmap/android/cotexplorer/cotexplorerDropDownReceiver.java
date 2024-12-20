@@ -155,6 +155,7 @@ public class cotexplorerDropDownReceiver extends DropDownReceiver implements
         clearBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                fullLog.clear();
                 cotexplorerlog.setText("");
             }
         });
