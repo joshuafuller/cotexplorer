@@ -1,43 +1,42 @@
-
 package com.atakmap.android.cotexplorer.plugin;
 
-import java.io.File;
 import android.content.Context;
+import android.os.Environment;
+import android.util.Log;
 
-/**
- * Boilerplate code for loading native.
- */
+import java.io.File;
+
 public class PluginNativeLoader {
 
     private static final String TAG = "NativeLoader";
     private static String ndl = null;
 
-    /**
-    * If a plugin wishes to make use of this class, they will need to copy it into their plugin.
-    * The classloader that loads this class is a key component of getting System.load to work 
-    * properly.   If it is desirable to use this in a plugin, it will need to be a direct copy in a
-    * non-conflicting package name.
-    */
+    // Path to the desired directory
+    private static final String COTEXPLORER_DIR = Environment.getExternalStorageDirectory() + "/atak/tools/cotexplorer";
+
     synchronized static public void init(final Context context) {
         if (ndl == null) {
             try {
+                // Initialize native library directory
                 ndl = context.getPackageManager()
-                        .getApplicationInfo(context.getPackageName(),
-                                0).nativeLibraryDir;
+                        .getApplicationInfo(context.getPackageName(), 0)
+                        .nativeLibraryDir;
+
+                // Create the /atak/tools/cotexplorer directory if it doesn't exist
+                File dir = new File(COTEXPLORER_DIR);
+                if (!dir.exists()) {
+                    if (dir.mkdirs()) {
+                        Log.i(TAG, "Directory created at: " + COTEXPLORER_DIR);
+                    } else {
+                        Log.e(TAG, "Failed to create directory at: " + COTEXPLORER_DIR);
+                    }
+                }
             } catch (Exception e) {
                 throw new IllegalArgumentException(
                         "native library loading will fail, unable to grab the nativeLibraryDir from the package name");
             }
-
         }
     }
-
-    /**
-    * Security guidance from our recent audit:
-    * Pass an absolute path to System.load(). Avoid System.loadLibrary() because its behavior 
-    * depends upon its implementation which often relies on environmental features that can be 
-    * manipulated. Use only validated, sanitized absolute paths.
-    */
 
     public static void loadLibrary(final String name) {
         if (ndl != null) {
@@ -49,7 +48,8 @@ public class PluginNativeLoader {
         } else {
             throw new IllegalArgumentException("NativeLoader not initialized");
         }
-
     }
-
+    public static String getCotExplorerDir() {
+        return COTEXPLORER_DIR;
+    }
 }

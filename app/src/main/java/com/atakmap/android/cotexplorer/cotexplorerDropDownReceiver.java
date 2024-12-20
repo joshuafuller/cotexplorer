@@ -1,4 +1,3 @@
-
 package com.atakmap.android.cotexplorer;
 
 import android.app.AlertDialog;
@@ -38,6 +37,7 @@ import com.atakmap.android.util.AbstractMapItemSelectionTool;
 import com.atakmap.comms.CommsLogger;
 import com.atakmap.comms.CommsMapComponent;
 import com.atakmap.coremap.cot.event.CotEvent;
+import com.atakmap.android.cotexplorer.plugin.PluginNativeLoader;
 
 import android.view.View;
 import android.widget.Button;
@@ -51,8 +51,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 
 public class cotexplorerDropDownReceiver extends DropDownReceiver implements
@@ -78,7 +81,7 @@ public class cotexplorerDropDownReceiver extends DropDownReceiver implements
     /**************************** CONSTRUCTOR *****************************/
 
     public cotexplorerDropDownReceiver(final MapView mapView,
-            final Context context) {
+                                       final Context context) {
         super(mapView);
         this.pluginContext = context;
         this.appContext = mapView.getContext();
@@ -123,15 +126,28 @@ public class cotexplorerDropDownReceiver extends DropDownReceiver implements
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                File f = new File(Environment.getExternalStorageDirectory() + "/atak/cotexplorer.txt");
+                // Get the directory path from PluginNativeLoader
+                String dirPath = PluginNativeLoader.getCotExplorerDir();
+
+                // Generate timestamped filename
+                String timestamp = new SimpleDateFormat("yyyyMMdd'T'HH:mm:ss'Z'", Locale.getDefault())
+                        .format(new Date());
+                File file = new File(dirPath, "cotexplorer-" + timestamp + ".txt");
+
                 try {
-                    FileWriter fw = new FileWriter(f);
+                    FileWriter fw = new FileWriter(file);
                     fw.write(cotexplorerlog.getText().toString());
                     fw.flush();
                     fw.close();
-                    Toast.makeText(mapView.getContext(), "Log written to /sdcard/atak/cotexplorer.txt", Toast.LENGTH_LONG).show();
+
+                    Toast.makeText(mapView.getContext(),
+                            "Log written to " + file.getAbsolutePath(),
+                            Toast.LENGTH_LONG).show();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Log.e(TAG, "Failed to save log file", e);
+                    Toast.makeText(mapView.getContext(),
+                            "Error saving log file",
+                            Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -147,10 +163,10 @@ public class cotexplorerDropDownReceiver extends DropDownReceiver implements
             @Override
             public void onClick(View view) {
                 if (paused) {
-                    pauseBtn.setText("   Pause   ");
+                    pauseBtn.setText("Pause");
                     paused = false;
                 } else {
-                    pauseBtn.setText("   Paused   ");
+                    pauseBtn.setText("Paused");
                     paused = true;
                 }
             }
@@ -395,7 +411,7 @@ public class cotexplorerDropDownReceiver extends DropDownReceiver implements
         Log.i(TAG, "Receive");
         String filter;
         if (cotFilter.isEmpty())
-             filter = _sharedPreference.getString("plugin_cotexplorer_type", "");
+            filter = _sharedPreference.getString("plugin_cotexplorer_type", "");
         else
             filter = cotFilter;
         if (filter.isEmpty())
