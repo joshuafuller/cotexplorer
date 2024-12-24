@@ -136,9 +136,10 @@ public class cotexplorerDropDownReceiver extends DropDownReceiver implements
             public void onClick(View v) {
                 // Get the directory path from PluginNativeLoader
                 String dirPath = PluginNativeLoader.getCotExplorerDir();
+                Log.d(TAG, "Directory path: " + dirPath);
 
                 // Generate timestamped filename
-                String timestamp = new SimpleDateFormat("yyyyMMdd'T'HH:mm:ss'Z'", Locale.getDefault())
+                String timestamp = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'", Locale.getDefault())
                         .format(new Date());
                 File file = new File(dirPath, "cotexplorer-" + timestamp + ".txt");
 
