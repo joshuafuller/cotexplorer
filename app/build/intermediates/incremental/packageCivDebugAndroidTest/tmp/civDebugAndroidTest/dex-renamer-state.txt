@@ -1,7 +1,7 @@
-#Fri Dec 20 15:01:58 CET 2024
-base.1=C\:\\Users\\cbenbow\\AndroidStudioProjects\\ATAK-MIL-5.3.0.3-SDK\\plugins\\cotexplorer\\app\\build\\intermediates\\dex\\civDebugAndroidTest\\mergeProjectDexCivDebugAndroidTest\\11\\classes.dex
+#Tue Dec 24 11:23:30 EST 2024
+base.1=C\:\\Users\\cfben\\StudioProjects\\ATAK Plugin\\ATAK-MIL-5.3.0.3-SDK\\plugins\\cotexplorer\\app\\build\\intermediates\\dex\\civDebugAndroidTest\\mergeProjectDexCivDebugAndroidTest\\11\\classes.dex
 path.1=11/classes.dex
-base.0=C\:\\Users\\cbenbow\\AndroidStudioProjects\\ATAK-MIL-5.3.0.3-SDK\\plugins\\cotexplorer\\app\\build\\intermediates\\dex\\civDebugAndroidTest\\mergeProjectDexCivDebugAndroidTest\\0\\classes.dex
+base.0=C\:\\Users\\cfben\\StudioProjects\\ATAK Plugin\\ATAK-MIL-5.3.0.3-SDK\\plugins\\cotexplorer\\app\\build\\intermediates\\dex\\civDebugAndroidTest\\mergeProjectDexCivDebugAndroidTest\\0\\classes.dex
 renamed.1=classes2.dex
 renamed.0=classes.dex
 path.0=0/classes.dex

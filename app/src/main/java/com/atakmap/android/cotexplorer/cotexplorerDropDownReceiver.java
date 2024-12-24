@@ -40,10 +40,14 @@ import com.atakmap.coremap.cot.event.CotEvent;
 import com.atakmap.android.cotexplorer.plugin.PluginNativeLoader;
 
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -71,7 +75,8 @@ public class cotexplorerDropDownReceiver extends DropDownReceiver implements
     final InspectionMapItemSelectionTool imis;
 
     private boolean paused = false;
-    private TextView cotexplorerlog = null;
+    private RecyclerView cotexplorerlog = null;
+    private LogAdapter logAdapter;
     private Button sendBtn, clearBtn, pauseBtn, saveBtn, inspectBtn = null;
     private ImageButton filterBtn = null;
     private SharedPreferences _sharedPreference = null;
@@ -91,6 +96,9 @@ public class cotexplorerDropDownReceiver extends DropDownReceiver implements
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.mainView = inflater.inflate(R.layout.main_layout, null);
         cotexplorerlog = mainView.findViewById(R.id.cotexplorerlog);
+        logAdapter = new LogAdapter(convertToSpannableList(fullLog));// Initialize adapter with your log list
+        cotexplorerlog.setLayoutManager(new LinearLayoutManager(context));
+        cotexplorerlog.setAdapter(logAdapter);
         clearBtn = mainView.findViewById(R.id.clearBtn);
         pauseBtn = mainView.findViewById(R.id.pauseBtn);
         filterBtn = mainView.findViewById(R.id.filterBtn);
@@ -136,7 +144,10 @@ public class cotexplorerDropDownReceiver extends DropDownReceiver implements
 
                 try {
                     FileWriter fw = new FileWriter(file);
-                    fw.write(cotexplorerlog.getText().toString());
+                    // Iterate through fullLog and write each entry to the file
+                    for (String log : fullLog) {
+                        fw.write(log + "\n");
+                    }
                     fw.flush();
                     fw.close();
 
@@ -155,8 +166,8 @@ public class cotexplorerDropDownReceiver extends DropDownReceiver implements
         clearBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                fullLog.clear();
-                cotexplorerlog.setText("");
+                fullLog.clear(); // Clear the list of logs
+                logAdapter.clearLogs(); // Clear the logs in the adapter and notify the RecyclerView
             }
         });
 
@@ -183,14 +194,14 @@ public class cotexplorerDropDownReceiver extends DropDownReceiver implements
                 input.setInputType(InputType.TYPE_CLASS_TEXT);
                 alertBuilder.setView(input);
 
-                alertBuilder.setNegativeButton("OK", (dialogInterface, i) -> {
+                alertBuilder.setPositiveButton("OK", (dialogInterface, i) -> {
                     cotFilter = input.getText().toString();
                     applyFilter(); // Apply the new filter to update TextView
                 });
 
-                alertBuilder.setNeutralButton("Cancel", (dialogInterface, i) -> {});
+                alertBuilder.setNegativeButton("Cancel", (dialogInterface, i) -> {});
 
-                alertBuilder.setPositiveButton("Clear", (dialogInterface, i) -> {
+                alertBuilder.setNeutralButton("Clear", (dialogInterface, i) -> {
                     cotFilter = ""; // Clear the filter
                     applyFilter();  // Apply the empty filter to show all logs
                 });
@@ -290,6 +301,84 @@ public class cotexplorerDropDownReceiver extends DropDownReceiver implements
         CommsMapComponent.getInstance().registerCommsLogger(this);
     }
 
+    private List<SpannableString> convertToSpannableList(List<String> logs) {
+        List<SpannableString> spannableLogs = new ArrayList<>();
+        for (String log : logs) {
+            spannableLogs.add(new SpannableString(log));
+        }
+        return spannableLogs;
+    }
+
+    public class LogAdapter extends RecyclerView.Adapter<LogAdapter.LogViewHolder> {
+        private List<SpannableString> logs;
+
+        public LogAdapter(List<SpannableString> logs) {
+            this.logs = logs;
+        }
+
+        public void addLog(SpannableString log) {
+            logs.add(log);
+            notifyItemInserted(logs.size() - 1);
+        }
+
+        // Method to clear logs
+        public void clearLogs() {
+            logs.clear();
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public LogViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext())
+                    .inflate(android.R.layout.simple_list_item_1, parent, false);
+            return new LogViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(LogViewHolder holder, int position) {
+            SpannableString logEntry = logs.get(position);
+
+            // Create a new SpannableStringBuilder to append the separator
+            SpannableStringBuilder logWithSeparator = new SpannableStringBuilder();
+            logWithSeparator.append(logEntry);
+            logWithSeparator.append("\n----------\n"); // Add a newline separator
+
+            holder.logText.setText(logWithSeparator);
+            holder.logText.setTextIsSelectable(true);
+
+            // Adjust text size dynamically
+            float textSize = getDynamicTextSize(holder.logText.getContext());
+            holder.logText.setTextSize(textSize);
+        }
+
+        private float getDynamicTextSize(Context context) {
+            float screenWidthDp = context.getResources().getDisplayMetrics().widthPixels /
+                    context.getResources().getDisplayMetrics().density;
+
+            if (screenWidthDp >= 600) {
+                return 16; // Tablets
+            } else if (screenWidthDp >= 360) {
+                return 14; // Phones
+            } else {
+                return 12; // Smaller devices
+            }
+        }
+
+        @Override
+        public int getItemCount() {
+            return logs.size();
+        }
+
+        public class LogViewHolder extends RecyclerView.ViewHolder { // Removed static modifier
+            TextView logText;
+
+            public LogViewHolder(View itemView) {
+                super(itemView);
+                logText = itemView.findViewById(android.R.id.text1);
+            }
+        }
+    }
+
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
@@ -304,16 +393,16 @@ public class cotexplorerDropDownReceiver extends DropDownReceiver implements
         if (paused) return;
 
         new Handler(Looper.getMainLooper()).post(() -> {
-            // Add the log entry to the full log list
-            fullLog.add(String.format("%s: %s", flag, log));
+            String formattedLog = String.format("%s: %s", flag, log);
+            fullLog.add(formattedLog);
 
-            // Apply the current filter and update the TextView
-            applyFilter();
+            SpannableString spannableLog = new SpannableString(formattedLog);
+            logAdapter.addLog(spannableLog); // Add log incrementally to adapter
         });
     }
 
     private void applyFilter() {
-        SpannableStringBuilder filteredLog = new SpannableStringBuilder();
+        List<SpannableString> filteredLogs = new ArrayList<>();
 
         for (String log : fullLog) {
             if (cotFilter.isEmpty() || log.contains(cotFilter)) {
@@ -329,16 +418,17 @@ public class cotexplorerDropDownReceiver extends DropDownReceiver implements
                             end,
                             Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                     );
-                    filteredLog.append(spannableLog);
+                    filteredLogs.add(spannableLog);
                 } else {
                     // No filter, append as plain text
-                    filteredLog.append(log);
+                    filteredLogs.add(new SpannableString(log));
                 }
-                filteredLog.append("\n----------\n");
             }
         }
 
-        cotexplorerlog.setText(filteredLog);
+        // Update adapter with filtered logs
+        logAdapter = new LogAdapter(filteredLogs);
+        cotexplorerlog.setAdapter(logAdapter);
     }
 
     final class InspectionMapItemSelectionTool
