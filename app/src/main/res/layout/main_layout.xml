@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/black"
     android:orientation="vertical"
     android:scrollbars="vertical">
 
@@ -16,6 +17,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#444444"
+        android:paddingTop="4dp"
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
@@ -23,50 +25,52 @@
             android:id="@+id/sendBtn"
             android:layout_width="wrap_content"
             android:layout_height="48dp"
-            android:layout_margin="2dp"
+            android:layout_margin="1dp"
             android:text="Send" />
 
         <Button
             android:id="@+id/saveBtn"
             android:layout_width="wrap_content"
             android:layout_height="48dp"
-            android:layout_margin="2dp"
+            android:layout_margin="1dp"
             android:text="Save" />
 
         <Button
             android:id="@+id/pauseBtn"
             android:layout_width="wrap_content"
             android:layout_height="48dp"
-            android:layout_margin="2dp"
+            android:layout_margin="1dp"
             android:text="Pause" />
 
         <Button
             android:id="@+id/clearBtn"
             android:layout_width="wrap_content"
             android:layout_height="48dp"
-            android:layout_margin="2dp"
+            android:layout_margin="1dp"
             android:text="Clear" />
 
         <Button
             android:id="@+id/inspectBtn"
             android:layout_width="wrap_content"
             android:layout_height="48dp"
-            android:layout_margin="2dp"
+            android:layout_margin="1dp"
             android:text="Inspect" />
 
         <View
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="48dp"
             android:layout_weight="1" />
 
         <ImageButton
             android:id="@+id/filterBtn"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_margin="2dp"
+            android:layout_margin="1dp"
             android:background="@android:color/transparent"
-            android:scaleType="centerInside"
             android:contentDescription="Filter"
+            android:paddingTop="8dp"
+            android:paddingBottom="12dp"
+            android:scaleType="centerInside"
             android:src="@drawable/ic_filter" />
     </LinearLayout>
     </HorizontalScrollView>
@@ -76,7 +80,6 @@
         android:id="@+id/cotexplorerlog"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/black"
         android:clickable="true"
         android:padding="10dp" />
 </LinearLayout>
