@@ -14,8 +14,8 @@
                         <option name="values">
                           <map>
                             <entry key="assetSourceType" value="FILE" />
-                            <entry key="outputName" value="ic_filter" />
-                            <entry key="sourceFile" value="C:\Users\cfben\StudioProjects\ATAK Plugin\trace.svg" />
+                            <entry key="outputName" value="cot_explorer" />
+                            <entry key="sourceFile" value="C:\Users\cfben\StudioProjects\ATAK Plugin\cot_explorer_transparent.svg" />
                           </map>
                         </option>
                       </PersistentState>

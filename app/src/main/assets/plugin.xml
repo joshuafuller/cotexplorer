@@ -5,7 +5,7 @@
 
     <extension
         type="gov.tak.api.plugin.IPlugin"
-        impl="com.atakmap.android.cotexplorer.plugin.cotexplorerLifecycle"
+        impl="com.atakmap.android.cotexplorer.plugin.CotExplorerLifecycle"
         singleton="true" />
 
 

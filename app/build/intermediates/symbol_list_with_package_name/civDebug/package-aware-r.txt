@@ -63,6 +63,7 @@ dimen notification_subtext_size
 dimen notification_top_pad
 dimen notification_top_pad_large_text
 drawable btn_gray
+drawable cot_explorer
 drawable ic_filter
 drawable ic_launcher
 drawable new_dark_button_bg

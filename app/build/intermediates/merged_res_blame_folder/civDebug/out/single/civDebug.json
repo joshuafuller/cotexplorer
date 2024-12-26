@@ -1,15 +1,15 @@
 [
     {
-        "merged": "com.atakmap.android.cotexplorer.plugin.app-merged_res-12:/layout_main_layout.xml.flat",
-        "source": "com.atakmap.android.cotexplorer.plugin.app-main-15:/layout/main_layout.xml"
-    },
-    {
         "merged": "C:\\Users\\cfben\\.gradle\\daemon\\7.6.1\\com.atakmap.android.cotexplorer.plugin.app-merged_res-12:\\drawable_new_dark_button_bg.xml.flat",
         "source": "C:\\Users\\cfben\\.gradle\\daemon\\7.6.1\\com.atakmap.android.cotexplorer.plugin.app-main-15:\\drawable\\new_dark_button_bg.xml"
     },
     {
         "merged": "C:\\Users\\cfben\\.gradle\\daemon\\7.6.1\\com.atakmap.android.cotexplorer.plugin.app-merged_res-12:\\xml_preferences.xml.flat",
         "source": "C:\\Users\\cfben\\.gradle\\daemon\\7.6.1\\com.atakmap.android.cotexplorer.plugin.app-main-15:\\xml\\preferences.xml"
+    },
+    {
+        "merged": "com.atakmap.android.cotexplorer.plugin.app-merged_res-12:/drawable_cot_explorer.xml.flat",
+        "source": "com.atakmap.android.cotexplorer.plugin.app-main-15:/drawable/cot_explorer.xml"
     },
     {
         "merged": "C:\\Users\\cfben\\.gradle\\daemon\\7.6.1\\com.atakmap.android.cotexplorer.plugin.app-merged_res-12:\\drawable_ic_filter.xml.flat",
@@ -30,6 +30,10 @@
     {
         "merged": "C:\\Users\\cfben\\.gradle\\daemon\\7.6.1\\com.atakmap.android.cotexplorer.plugin.app-merged_res-12:\\drawable-xxhdpi_ic_filter.png.flat",
         "source": "C:\\Users\\cfben\\.gradle\\daemon\\7.6.1\\com.atakmap.android.cotexplorer.plugin.app-main-15:\\drawable-xxhdpi\\ic_filter.png"
+    },
+    {
+        "merged": "C:\\Users\\cfben\\.gradle\\daemon\\7.6.1\\com.atakmap.android.cotexplorer.plugin.app-merged_res-12:\\drawable_cot_explorer.xml.flat",
+        "source": "C:\\Users\\cfben\\.gradle\\daemon\\7.6.1\\com.atakmap.android.cotexplorer.plugin.app-main-15:\\drawable\\cot_explorer.xml"
     },
     {
         "merged": "C:\\Users\\cfben\\.gradle\\daemon\\7.6.1\\com.atakmap.android.cotexplorer.plugin.app-merged_res-12:\\drawable-mdpi_ic_filter.png.flat",
