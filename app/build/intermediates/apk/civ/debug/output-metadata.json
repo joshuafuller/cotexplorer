@@ -1,0 +1,20 @@
+{
+  "version": 3,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "com.atakmap.android.cotexplorer.plugin",
+  "variantName": "civDebug",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "attributes": [],
+      "versionCode": 1735251633,
+      "versionName": "1.2 (abbb847e) - [4.10.0]",
+      "outputFile": "ATAK-Plugin-CoT Explorer-1.2-abbb847e-4.10.0-civ-debug.apk"
+    }
+  ],
+  "elementType": "File"
+}

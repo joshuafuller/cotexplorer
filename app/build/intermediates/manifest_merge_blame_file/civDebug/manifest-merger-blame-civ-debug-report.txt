@@ -1,8 +1,8 @@
 1<?xml version="1.0" encoding="utf-8"?>
 2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
 3    package="com.atakmap.android.cotexplorer.plugin"
-4    android:versionCode="1735250932"
-5    android:versionName="1.2 (620e4a72) - [4.10.0]" >
+4    android:versionCode="1735251633"
+5    android:versionName="1.2 (abbb847e) - [4.10.0]" >
 6
 7    <uses-sdk
 8        android:minSdkVersion="24"
@@ -25,36 +25,37 @@
 17-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:9:9-45
 18        android:label="@string/app_name"
 18-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:10:9-41
-19        android:theme="@style/AppTheme"
-19-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:13:9-40
-20        android:usesCleartextTraffic="true" >
-20-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:7:9-44
-21        <meta-data
-22            android:name="plugin-api"
-22-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:14:20-45
-23            android:value="com.atakmap.app@4.10.0.CIV" />
-23-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:14:46-79
-24        <meta-data
-24-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:15:9-78
-25            android:name="app_desc"
-25-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:15:20-43
-26            android:value="@string/app_desc" />
-26-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:15:44-76
-27
-28        <activity
-28-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:17:15-23:26
-29            android:name="com.atakmap.app.component"
-29-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:17:25-65
-30            android:exported="true" >
-30-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:19:19-42
-31            <intent-filter android:label="@string/app_name" >
-31-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:20:19-22:35
-31-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:20:34-66
-32                <action android:name="com.atakmap.app.component" />
-32-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:21:21-72
-32-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:21:29-69
-33            </intent-filter>
-34        </activity>
-35    </application>
-36
-37</manifest>
+19        android:testOnly="true"
+20        android:theme="@style/AppTheme"
+20-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:13:9-40
+21        android:usesCleartextTraffic="true" >
+21-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:7:9-44
+22        <meta-data
+23            android:name="plugin-api"
+23-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:14:20-45
+24            android:value="com.atakmap.app@4.10.0.CIV" />
+24-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:14:46-79
+25        <meta-data
+25-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:15:9-78
+26            android:name="app_desc"
+26-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:15:20-43
+27            android:value="@string/app_desc" />
+27-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:15:44-76
+28
+29        <activity
+29-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:17:15-23:26
+30            android:name="com.atakmap.app.component"
+30-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:17:25-65
+31            android:exported="true" >
+31-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:19:19-42
+32            <intent-filter android:label="@string/app_name" >
+32-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:20:19-22:35
+32-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:20:34-66
+33                <action android:name="com.atakmap.app.component" />
+33-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:21:21-72
+33-->C:\Users\cfben\StudioProjects\ATAK Plugin\ATAK-MIL-5.3.0.3-SDK\plugins\cotexplorer\app\src\main\AndroidManifest.xml:21:29-69
+34            </intent-filter>
+35        </activity>
+36    </application>
+37
+38</manifest>

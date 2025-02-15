@@ -77,16 +77,21 @@ public class CotExplorerDropDownReceiver extends DropDownReceiver implements
     private SharedPreferences _sharedPreference = null;
     private String cotFilter = "";
     private List<String> fullLog = new ArrayList<>();
+    private static boolean isRegistered = false;
 
     /**************************** CONSTRUCTOR *****************************/
 
-    public CotExplorerDropDownReceiver(final MapView mapView,
-                                       final Context context) {
+    public CotExplorerDropDownReceiver(final MapView mapView, final Context context) {
         super(mapView);
         this.pluginContext = context;
         this.appContext = mapView.getContext();
         this.mapView = mapView;
-        this.imis = new InspectionMapItemSelectionTool(); // Initialize here
+        this.imis = new InspectionMapItemSelectionTool();
+
+        if (!isRegistered) {
+            CommsMapComponent.getInstance().registerCommsLogger(this);
+            isRegistered = true; // Prevent duplicate registrations
+        }
 
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.mainView = inflater.inflate(R.layout.main_layout, null);
@@ -191,15 +196,19 @@ public class CotExplorerDropDownReceiver extends DropDownReceiver implements
                 alertBuilder.setView(input);
 
                 alertBuilder.setPositiveButton("OK", (dialogInterface, i) -> {
-                    cotFilter = input.getText().toString();
-                    applyFilter(); // Apply the new filter to update TextView
+                    cotFilter = input.getText().toString().trim();
+                    Log.i(TAG, "Filter set to: '" + cotFilter + "'");
+                    _sharedPreference.edit().putString("plugin_cotexplorer_type", cotFilter).apply(); // Save immediately
+                    applyFilter();
                 });
 
                 alertBuilder.setNegativeButton("Cancel", (dialogInterface, i) -> {});
 
                 alertBuilder.setNeutralButton("Clear", (dialogInterface, i) -> {
-                    cotFilter = ""; // Clear the filter
-                    applyFilter();  // Apply the empty filter to show all logs
+                    cotFilter = ""; // Properly reset the filter
+                    _sharedPreference.edit().remove("plugin_cotexplorer_type").apply(); // Ensure no old values persist
+                    Log.i(TAG, "Filter cleared.");
+                    applyFilter();
                 });
 
                 alertBuilder.setCancelable(true);
@@ -317,6 +326,12 @@ public class CotExplorerDropDownReceiver extends DropDownReceiver implements
             notifyItemInserted(logs.size() - 1);
         }
 
+        public void updateLogs(List<SpannableString> newLogs) {
+            logs.clear();
+            logs.addAll(newLogs);
+            notifyDataSetChanged(); // Properly update RecyclerView
+        }
+
         // Method to clear logs
         public void clearLogs() {
             logs.clear();
@@ -385,46 +400,73 @@ public class CotExplorerDropDownReceiver extends DropDownReceiver implements
         }
     }
 
-    private void writeLog(final String log, final String flag) {
+    private void writeLog(final String log) {
         if (paused) return;
 
         new Handler(Looper.getMainLooper()).post(() -> {
-            String formattedLog = String.format("%s: %s", flag, log);
-            fullLog.add(formattedLog);
+            synchronized (fullLog) { // Prevent concurrent modification
+                if (!fullLog.contains(log)) {
+                    fullLog.add(log); // Ensure no duplicates
+                }
+            }
 
-            SpannableString spannableLog = new SpannableString(formattedLog);
-            logAdapter.addLog(spannableLog); // Add log incrementally to adapter
+            SpannableString spannableLog = new SpannableString(log);
+
+            if (!cotFilter.isEmpty() && log.contains(cotFilter)) {
+                int start = log.indexOf(cotFilter);
+                int end = start + cotFilter.length();
+                spannableLog.setSpan(
+                        new BackgroundColorSpan(0x80FFFF33), // Highlight match
+                        start,
+                        end,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                );
+            }
+
+            if (cotFilter.isEmpty() || log.contains(cotFilter)) {
+                logAdapter.addLog(spannableLog);
+                cotexplorerlog.scrollToPosition(logAdapter.getItemCount() - 1);
+            }
+
+            // Ensure UI updates when a filter is active
+            if (!cotFilter.isEmpty()) {
+                applyFilter();
+            }
         });
     }
 
     private void applyFilter() {
+        // Always fetch the latest filter value
+        cotFilter = _sharedPreference.getString("plugin_cotexplorer_type", "").trim();
+        Log.i(TAG, "Applying filter: '" + cotFilter + "'");
+
+        List<String> logCopy;
+        synchronized (fullLog) {
+            logCopy = new ArrayList<>(fullLog);
+        }
+
         List<SpannableString> filteredLogs = new ArrayList<>();
 
-        for (String log : fullLog) {
+        for (String log : logCopy) {
             if (cotFilter.isEmpty() || log.contains(cotFilter)) {
+                SpannableString spannableLog = new SpannableString(log);
                 if (!cotFilter.isEmpty()) {
-                    // Highlight the matching part
                     int start = log.indexOf(cotFilter);
                     int end = start + cotFilter.length();
-
-                    SpannableString spannableLog = new SpannableString(log);
                     spannableLog.setSpan(
-                            new BackgroundColorSpan(0x80FFFF33), // Yellow background
+                            new BackgroundColorSpan(0x80FFFF33),
                             start,
                             end,
                             Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                     );
-                    filteredLogs.add(spannableLog);
-                } else {
-                    // No filter, append as plain text
-                    filteredLogs.add(new SpannableString(log));
                 }
+                filteredLogs.add(spannableLog);
             }
         }
 
-        // Update adapter with filtered logs
-        logAdapter = new LogAdapter(filteredLogs);
-        cotexplorerlog.setAdapter(logAdapter);
+        Log.i(TAG, "Filtered logs count: " + filteredLogs.size());
+                logAdapter.updateLogs(filteredLogs);
+        cotexplorerlog.scrollToPosition(logAdapter.getItemCount() - 1);
     }
 
     final class InspectionMapItemSelectionTool
@@ -446,7 +488,8 @@ public class CotExplorerDropDownReceiver extends DropDownReceiver implements
 
     @Override
     public void disposeImpl() {
-
+        Log.i(TAG, "Unregistering logReceive()");
+        CommsMapComponent.getInstance().unregisterCommsLogger(this);
     }
 
     @Override
@@ -467,44 +510,66 @@ public class CotExplorerDropDownReceiver extends DropDownReceiver implements
 
     @Override
     public void logSend(CotEvent cotEvent, String s) {
-        Log.i(TAG, "Sending");
-        String filter;
-        if (cotFilter.isEmpty())
-            filter = _sharedPreference.getString("plugin_cotexplorer_type", "");
-        else
-            filter = cotFilter;
-        if (filter.isEmpty())
-            writeLog(cotEvent.toString(), "S");
-        else if (filter.startsWith(cotEvent.getType()))
-            writeLog(cotEvent.toString(), "S");
+        Log.i(TAG, "Sent event: " + cotEvent.getType());
+
+        // Ensure we always get the latest filter
+        cotFilter = _sharedPreference.getString("plugin_cotexplorer_type", "").trim();
+        String eventMessage = cotEvent.toString().trim(); // Use the full message
+        Log.i(TAG, "Current filter: '" + cotFilter + "'");
+        Log.i(TAG, "Full CoT Message: " + eventMessage);
+        if (cotFilter.isEmpty()) {
+            Log.i(TAG, "No filter applied, displaying event.");
+            writeLog(String.format("S: %s", eventMessage));
+        } else if (eventMessage.contains(cotFilter)) { // Check full message
+            Log.i(TAG, "Log matches filter, adding to RecyclerView.");
+            writeLog(String.format("S: %s", eventMessage));
+        } else {
+            Log.i(TAG, "Log does NOT match filter, skipping UI update.");
+            Log.i(TAG, "eventMessage.contains(cotFilter) == " + eventMessage.contains(cotFilter));
+        }
     }
 
     @Override
     public void logSend(CotEvent cotEvent, String[] strings) {
-        Log.i(TAG, "Sending2");
-        String filter;
-        if (cotFilter.isEmpty())
-            filter = _sharedPreference.getString("plugin_cotexplorer_type", "");
-        else
-            filter = cotFilter;
-        if (filter.isEmpty())
-            writeLog(cotEvent.toString(), "S");
-        else if (filter.startsWith(cotEvent.getType()))
-            writeLog(cotEvent.toString(), "S");
+        Log.i(TAG, "Sent event: " + cotEvent.getType());
+
+        // Ensure we always get the latest filter
+        cotFilter = _sharedPreference.getString("plugin_cotexplorer_type", "").trim();
+        String eventMessage = cotEvent.toString().trim(); // Use the full message
+        Log.i(TAG, "Current filter: '" + cotFilter + "'");
+        Log.i(TAG, "Full CoT Message: " + eventMessage);
+        if (cotFilter.isEmpty()) {
+            Log.i(TAG, "No filter applied, displaying event.");
+            writeLog(String.format("S: %s", eventMessage));
+        } else if (eventMessage.contains(cotFilter)) { // Check full message
+            Log.i(TAG, "Log matches filter, adding to RecyclerView.");
+            writeLog(String.format("S: %s", eventMessage));
+        } else {
+            Log.i(TAG, "Log does NOT match filter, skipping UI update.");
+            Log.i(TAG, "eventMessage.contains(cotFilter) == " + eventMessage.contains(cotFilter));
+        }
     }
 
     @Override
     public void logReceive(CotEvent cotEvent, String s, String s1) {
-        Log.i(TAG, "Receive");
-        String filter;
-        if (cotFilter.isEmpty())
-            filter = _sharedPreference.getString("plugin_cotexplorer_type", "");
-        else
-            filter = cotFilter;
-        if (filter.isEmpty())
-            writeLog(cotEvent.toString(), "R");
-        else if (filter.startsWith(cotEvent.getType()))
-            writeLog(cotEvent.toString(), "R");
+        Log.i(TAG, "Received event: " + cotEvent.getType());
+
+        // Ensure we always get the latest filter
+        cotFilter = _sharedPreference.getString("plugin_cotexplorer_type", "").trim();
+        String eventMessage = cotEvent.toString().trim(); // Use the full message
+        Log.i(TAG, "Current filter: '" + cotFilter + "'");
+        Log.i(TAG, "Full CoT Message: " + eventMessage);
+
+        if (cotFilter.isEmpty()) {
+            Log.i(TAG, "No filter applied, displaying event.");
+            writeLog(String.format("R: %s", eventMessage));
+        } else if (eventMessage.contains(cotFilter)) { // Check full message
+            Log.i(TAG, "Log matches filter, adding to RecyclerView.");
+            writeLog(String.format("R: %s", eventMessage));
+        } else {
+            Log.i(TAG, "Log does NOT match filter, skipping UI update.");
+            Log.i(TAG, "eventMessage.contains(cotFilter) == " + eventMessage.contains(cotFilter));
+        }
     }
 
     @Override
