@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#000000</color>
+    <color name="darker_gray">#121212</color>
+    <color name="white">#ffffff</color>
+    <dimen name="fontSize">14sp</dimen>
+    <string name="app_desc">This plugin shows all the CoTs</string>
+    <string name="app_name">CoT Explorer</string>
+    <string name="key_cotexplorer_preferences">plugin_cotexplorer_preferences</string>
+    <string name="preferences_summary">Allow configuration of CoT Explorer</string>
+    <string name="preferences_title">CoT Explorer Plugin Preferences</string>
+    <string name="set_enabled">Enable CoT Logging</string>
+    <string name="set_recv">Show Recv CoT</string>
+    <string name="set_recv_summary">Toggle to display all the received CoT</string>
+    <string name="set_send">Show Sent CoT</string>
+    <string name="set_send_summary">Toggle to display all the sent CoT</string>
+    <string name="set_set_enabled_summary">This is will impact performance. Don\'t leave it always on</string>
+    <string name="set_type">Filter by CoT type</string>
+    <string name="set_type_summary">Enter a CoT type to filter by</string>
+    <string name="versionName" translatable="false">2.0 (null) - [5.4.0]</string>
+    <style name="ATAKEditText" parent="@android:style/Widget.EditText">
+        
+        
+
+        
+        <item name="android:imeOptions">flagNoFullscreen</item>
+    </style>
+    <style name="ATAKPluginTheme" parent="@android:style/Theme.Holo">
+        <item name="android:buttonStyle">@android:style/Widget.Button</item>
+        <item name="android:imageButtonStyle">@android:style/Widget.Button</item>
+        <item name="android:buttonStyleToggle">@android:style/Widget.Button</item>
+        <item name="android:spinnerStyle">@style/ATAKSpinner</item>
+        <item name="android:spinnerItemStyle">@style/ATAKSpinnerItem</item>
+        <item name="android:editTextStyle">@style/ATAKEditText</item>
+    </style>
+    <style name="ATAKSpinner" parent="@android:style/Widget.Spinner">
+        <item name="android:spinnerMode">dialog</item>
+    </style>
+    <style name="ATAKSpinnerItem" parent="@style/AppTheme">
+        <item name="android:textColor">@android:color/black</item>
+    </style>
+    <style name="ATAKTheme" parent="@android:style/Theme.Holo">
+
+        
+        <item name="android:buttonStyle">@android:style/Widget.Button</item>
+        <item name="android:imageButtonStyle">@android:style/Widget.Button</item>
+        <item name="android:buttonStyleToggle">@android:style/Widget.Button</item>
+        <item name="android:spinnerStyle">@style/ATAKSpinner</item>
+        <item name="android:spinnerItemStyle">@style/ATAKSpinnerItem</item>
+
+        <item name="android:editTextStyle">@style/ATAKEditText</item>
+
+        
+        
+    </style>
+    <style name="AppBaseTheme" parent="android:Theme.Light">
+        
+    </style>
+    <style name="AppTheme" parent="@android:style/Theme.Holo">
+        <item name="android:buttonStyle">@android:style/Widget.Button</item>
+        <item name="android:imageButtonStyle">@android:style/Widget.Button</item>
+        <item name="android:buttonStyleToggle">@android:style/Widget.Button</item>
+        <item name="android:spinnerStyle">@style/ATAKSpinner</item>
+        <item name="android:spinnerItemStyle">@style/ATAKSpinnerItem</item>
+        <item name="android:editTextStyle">@style/ATAKEditText</item>
+    </style>
+    <style name="FullDropdownStyle" parent="@style/ATAKTheme">
+        <item name="android:buttonStyle">@style/unpaddedButton</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:imeOptions">flagNoExtractUi</item>
+    </style>
+    <style name="darkButton" parent="@android:style/Widget.Button">
+        <item name="android:background">@drawable/btn_gray</item>
+        <item name="android:shadowColor">@color/darker_gray</item>
+        <item name="android:shadowDy">1</item>
+        <item name="android:shadowRadius">2</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">3dp</item>
+        <item name="android:textSize">@dimen/fontSize</item>
+    </style>
+    <style name="unpaddedButton" parent="@android:style/Widget.Button">
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">3dp</item>
+        <item name="android:textSize">@dimen/fontSize</item>
+    </style>
+</resources>

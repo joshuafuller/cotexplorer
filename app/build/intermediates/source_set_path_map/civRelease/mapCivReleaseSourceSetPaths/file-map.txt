@@ -1,0 +1,11 @@
+com.atakmap.android.cotexplorer.plugin.app-recyclerview-1.3.2-0 C:\Users\cbenbow\.gradle\caches\8.10.2\transforms\72d522a404bec3e8532ad963026bfa51\transformed\recyclerview-1.3.2\res
+com.atakmap.android.cotexplorer.plugin.app-jetified-customview-poolingcontainer-1.0.0-1 C:\Users\cbenbow\.gradle\caches\8.10.2\transforms\c58bec38ee1711ee3c0daf0c8bf5b98a\transformed\jetified-customview-poolingcontainer-1.0.0\res
+com.atakmap.android.cotexplorer.plugin.app-release-2 C:\Users\cbenbow\AndroidStudioProjects\ATAK-MIL-5.4.0.14-SDK\plugins\cotexplorer\app\build-types\release\res
+com.atakmap.android.cotexplorer.plugin.app-civ-3 C:\Users\cbenbow\AndroidStudioProjects\ATAK-MIL-5.4.0.14-SDK\plugins\cotexplorer\app\build\generated\res\pngs\civ\release
+com.atakmap.android.cotexplorer.plugin.app-civ-4 C:\Users\cbenbow\AndroidStudioProjects\ATAK-MIL-5.4.0.14-SDK\plugins\cotexplorer\app\build\generated\res\resValues\civ\release
+com.atakmap.android.cotexplorer.plugin.app-packageCivReleaseResources-5 C:\Users\cbenbow\AndroidStudioProjects\ATAK-MIL-5.4.0.14-SDK\plugins\cotexplorer\app\build\intermediates\incremental\civRelease\packageCivReleaseResources\merged.dir
+com.atakmap.android.cotexplorer.plugin.app-packageCivReleaseResources-6 C:\Users\cbenbow\AndroidStudioProjects\ATAK-MIL-5.4.0.14-SDK\plugins\cotexplorer\app\build\intermediates\incremental\civRelease\packageCivReleaseResources\stripped.dir
+com.atakmap.android.cotexplorer.plugin.app-civRelease-7 C:\Users\cbenbow\AndroidStudioProjects\ATAK-MIL-5.4.0.14-SDK\plugins\cotexplorer\app\build\intermediates\merged_res\civRelease\mergeCivReleaseResources
+com.atakmap.android.cotexplorer.plugin.app-civ-8 C:\Users\cbenbow\AndroidStudioProjects\ATAK-MIL-5.4.0.14-SDK\plugins\cotexplorer\app\src\civ\res
+com.atakmap.android.cotexplorer.plugin.app-civRelease-9 C:\Users\cbenbow\AndroidStudioProjects\ATAK-MIL-5.4.0.14-SDK\plugins\cotexplorer\app\src\civRelease\res
+com.atakmap.android.cotexplorer.plugin.app-main-10 C:\Users\cbenbow\AndroidStudioProjects\ATAK-MIL-5.4.0.14-SDK\plugins\cotexplorer\app\src\main\res

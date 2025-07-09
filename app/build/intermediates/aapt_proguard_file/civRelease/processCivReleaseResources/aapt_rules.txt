@@ -1,0 +1,7 @@
+-keep class com.atakmap.app.component { <init>(); }
+-keep class androidx.recyclerview.widget.RecyclerView { <init>(android.content.Context, android.util.AttributeSet); }
+
+-keep class com.atakmap.android.gui.PanEditTextPreference { <init>(...); }
+
+-keep class com.atakmap.android.gui.PanSwitchPreference { <init>(...); }
+

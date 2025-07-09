@@ -1,0 +1,4 @@
+#Wed Jul 09 14:00:42 EDT 2025
+base.0=C\:\\Users\\cbenbow\\AndroidStudioProjects\\ATAK-MIL-5.4.0.14-SDK\\plugins\\cotexplorer\\app\\build\\intermediates\\dex\\civRelease\\minifyCivReleaseWithR8\\classes.dex
+path.0=classes.dex
+renamed.0=classes.dex
