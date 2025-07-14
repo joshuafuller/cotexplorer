@@ -1,2 +1,34 @@
+# ========== Gradle ==========
+
+.gradle/
+**/build/
+**/intermediates/
+**/generated/
+**/outputs/
+**/tmp/
+
+# Gradle Wrapper cache (optional)
+gradle/wrapper/gradle-wrapper.jar
+
+# Local Gradle/SDK config
 local.properties
-.DS_Store
+*.iml
+
+# Lock/cache/temp files
+**/*.lock
+**/*.bin
+
+# ========== Android Studio / IntelliJ ==========
+
+.idea/
+*.logcat
+
+# ========== APKs & Artifacts ==========
+
+*.apk
+*.ap_
+*.dex
+*.jar
+*.apk.jar
+*.mapping.txt
+*.json
