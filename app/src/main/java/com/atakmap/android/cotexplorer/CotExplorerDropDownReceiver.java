@@ -20,9 +20,12 @@ import android.text.style.BackgroundColorSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 
+import com.atakmap.android.contact.ContactPresenceDropdown;
 import com.atakmap.android.cot.CotMapComponent;
+import com.atakmap.android.cot.importer.CotImporterManager;
 import com.atakmap.android.gui.EditText;
 import com.atakmap.android.importexport.CotEventFactory;
+import com.atakmap.android.importexport.send.SendDialog;
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.maps.MapItem;
 import com.atakmap.android.maps.MapView;
@@ -30,12 +33,15 @@ import com.atakmap.android.dropdown.DropDown.OnStateListener;
 import com.atakmap.android.dropdown.DropDownReceiver;
 
 import com.atakmap.android.toolbar.ToolManagerBroadcastReceiver;
+import com.atakmap.android.util.ATAKUtilities;
 import com.atakmap.android.util.AbstractMapItemSelectionTool;
 import com.atakmap.android.cotexplorer.plugin.R;
 import com.atakmap.comms.CommsLogger;
 import com.atakmap.comms.CommsMapComponent;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.atakmap.android.cotexplorer.plugin.PluginNativeLoader;
+import com.atakmap.coremap.filesystem.FileSystemUtils;
+import com.atakmap.coremap.io.IOProviderFactory;
 
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,6 +56,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -111,21 +118,94 @@ public class CotExplorerDropDownReceiver extends DropDownReceiver implements
             @Override
             public void onClick(View v) {
 
-
                 EditText et = new EditText(mapView.getContext());
 
                 AlertDialog.Builder alertDialog = new AlertDialog.Builder(mapView.getContext());
                 alertDialog.setTitle("Enter CoT to send");
                 alertDialog.setView(et);
                 alertDialog.setNegativeButton("Cancel", null);
-                alertDialog.setPositiveButton("Send", (dialogInterface, i) -> {
-                    CotEvent cot = CotEvent.parse(et.getText().toString());
-                    if (cot.isValid()) {
-                        CotMapComponent.getExternalDispatcher().dispatch(cot);
-                    } else {
+
+                alertDialog.setPositiveButton("Send…", (dialogInterface, i) -> {
+                    final String xml = et.getText() != null ? et.getText().toString() : null;
+                    if (xml == null || xml.trim().isEmpty()) {
+                        Toast.makeText(mapView.getContext(), "No CoT XML", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    CotEvent evt = null;
+                    try { evt = CotEvent.parse(xml); } catch (Exception ignore) {}
+                    if (evt == null || !evt.isValid()) {
                         Toast.makeText(mapView.getContext(), "Invalid CoT", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    // Ensure a stable UID
+                    if (evt.getUID() == null || evt.getUID().trim().isEmpty()) {
+                        try {
+                            evt.setUID(java.util.UUID.randomUUID().toString());
+                        } catch (Throwable t) {
+                            String fixedXml = xml.replaceFirst("<event\\b",
+                                    "<event uid=\"" + java.util.UUID.randomUUID() + "\"");
+                            try {
+                                evt = CotEvent.parse(fixedXml);
+                            } catch (Exception e2) {
+                                Toast.makeText(mapView.getContext(), "Invalid CoT (no uid)", Toast.LENGTH_LONG).show();
+                                return;
+                            }
+                        }
+                    }
+
+                    // Import locally
+                    CommsMapComponent.ImportResult r;
+                    try {
+                        CotImporterManager mgr = CotImporterManager.getInstance();
+                        if (mgr == null) {
+                            Toast.makeText(mapView.getContext(), "Importer not ready", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        r = mgr.importData(evt, new Bundle());
+                    } catch (Exception e) {
+                        Toast.makeText(mapView.getContext(), "Import error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    if (r == CommsMapComponent.ImportResult.SUCCESS || r == CommsMapComponent.ImportResult.IGNORE) {
+                        final String uid = evt.getUID();
+                        MapItem item = mapView.getMapItem(uid);
+                        if (item != null) {
+                            openContactListForSend(item);
+                        } else {
+                            // wait briefly for UI-thread creation of the item
+                            CotEvent finalEvt = evt;
+                            waitForMapItem(uid, 750, 75,
+                                    () -> {
+                                        MapItem mi = mapView.getMapItem(uid);
+                                        if (mi != null) openContactListForSend(mi);
+                                        else {
+                                            CotMapComponent.getExternalDispatcher().dispatch(finalEvt);
+                                            Toast.makeText(mapView.getContext(),
+                                                    "Sent via broadcast (no MapItem)", Toast.LENGTH_SHORT).show();
+                                        }
+                                    },
+                                    () -> {
+                                        CotMapComponent.getExternalDispatcher().dispatch(finalEvt);
+                                        Toast.makeText(mapView.getContext(),
+                                                "Sent via broadcast (timeout waiting for MapItem)",
+                                                Toast.LENGTH_SHORT).show();
+                                    }
+                            );
+                        }
+                    } else {
+                        // Import failed – fall back to immediate broadcast
+                        CotMapComponent.getExternalDispatcher().dispatch(evt);
+                        Toast.makeText(mapView.getContext(),
+                                "Import failed; broadcast sent", Toast.LENGTH_SHORT).show();
                     }
                 });
+                alertDialog.setNeutralButton("Process", (dialogInterface, i) -> {
+                    processCotXml(et.getContext(), et.getText().toString());
+                });
+
                 alertDialog.show();
             }
         });
@@ -485,6 +565,83 @@ public class CotExplorerDropDownReceiver extends DropDownReceiver implements
             return true;
         }
 
+    }
+
+    private void processCotXml(Context context, String cotXml) {
+        if (cotXml == null || cotXml.trim().isEmpty()) {
+            Toast.makeText(context, "No CoT XML to process", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            // Parse XML -> CotEvent
+            CotEvent event = CotEvent.parse(cotXml);
+            if (event == null) {
+                Toast.makeText(context, "Invalid CoT XML", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Get the importer manager
+            CotImporterManager mgr = CotImporterManager.getInstance();
+            if (mgr == null) {
+                Toast.makeText(context, "Importer not ready (no Map/Importer instance)", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Optional extras for import (keep empty unless you need flags)
+            Bundle extras = new Bundle();
+            // e.g. extras.putBoolean("centerOnImport", true);
+
+            CommsMapComponent.ImportResult r = mgr.importData(event, extras);
+            switch (r) {
+                case SUCCESS:
+                    Toast.makeText(context, "Processed CoT locally", Toast.LENGTH_SHORT).show();
+                    break;
+                case IGNORE:
+                    Toast.makeText(context, "No importer handled this CoT", Toast.LENGTH_SHORT).show();
+                    break;
+                case FAILURE:
+                default:
+                    Toast.makeText(context, "Failed to process CoT", Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        } catch (Exception e) {
+            Toast.makeText(context, "Error parsing/processing CoT: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void openContactListForSend(MapItem mapItem) {
+        // Mirror core behavior: resolve associated shape, ensure shareable
+        MapItem itemToSend = ATAKUtilities.findAssocShape(mapItem);
+        if (itemToSend == null) itemToSend = mapItem;
+        itemToSend.setMetaBoolean("shared", true);
+
+        Intent contactList = new Intent(ContactPresenceDropdown.SEND_LIST);
+        contactList.putExtra("targetUID", itemToSend.getUID());
+        AtakBroadcast.getInstance().sendBroadcast(contactList);
+    }
+
+    private void waitForMapItem(final String uid,
+                                final long timeoutMs,
+                                final long stepMs,
+                                final Runnable onFound,
+                                final Runnable onTimeout) {
+        final long start = System.currentTimeMillis();
+        final Handler h = new Handler(Looper.getMainLooper());
+
+        final Runnable poll = new Runnable() {
+            @Override public void run() {
+                MapItem mi = mapView.getMapItem(uid);
+                if (mi != null) {
+                    onFound.run();
+                } else if (System.currentTimeMillis() - start >= timeoutMs) {
+                    onTimeout.run();
+                } else {
+                    h.postDelayed(this, stepMs);
+                }
+            }
+        };
+        h.post(poll);
     }
 
     @Override
