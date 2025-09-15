@@ -210,7 +210,7 @@ public class CotExplorerDropDownReceiver extends DropDownReceiver implements
                                 "Import failed; broadcast sent", Toast.LENGTH_SHORT).show();
                     }
                 });
-                alertDialog.setNeutralButton("Process", (dialogInterface, i) -> {
+                alertDialog.setNeutralButton("Plot", (dialogInterface, i) -> {
                     processCotXml(et.getContext(), et.getText().toString());
                 });
 
