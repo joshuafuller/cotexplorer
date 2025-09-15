@@ -45,6 +45,7 @@ import com.atakmap.coremap.io.IOProviderFactory;
 
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -438,7 +439,6 @@ public class CotExplorerDropDownReceiver extends DropDownReceiver implements
             logWithSeparator.append("\n----------\n"); // Add a newline separator
 
             holder.logText.setText(logWithSeparator);
-            holder.logText.setTextIsSelectable(true);
 
             // Adjust text size dynamically
             float textSize = getDynamicTextSize(holder.logText.getContext());
@@ -463,12 +463,49 @@ public class CotExplorerDropDownReceiver extends DropDownReceiver implements
             return logs.size();
         }
 
-        public class LogViewHolder extends RecyclerView.ViewHolder { // Removed static modifier
+        public class LogViewHolder extends RecyclerView.ViewHolder {
             TextView logText;
+            private boolean selecting = false;
 
             public LogViewHolder(View itemView) {
                 super(itemView);
                 logText = itemView.findViewById(android.R.id.text1);
+
+                logText.setTextIsSelectable(true);
+                logText.setLongClickable(true);
+                logText.setFocusable(true);
+                logText.setFocusableInTouchMode(true);
+
+                logText.setCustomSelectionActionModeCallback(new android.view.ActionMode.Callback() {
+                    @Override public boolean onCreateActionMode(android.view.ActionMode mode, android.view.Menu menu) {
+                        selecting = true;
+                        ViewParent p = logText.getParent();
+                        if (p != null) p.requestDisallowInterceptTouchEvent(true);
+                        return true;
+                    }
+                    @Override public boolean onPrepareActionMode(android.view.ActionMode mode, android.view.Menu menu) { return false; }
+                    @Override public boolean onActionItemClicked(android.view.ActionMode mode, android.view.MenuItem item) { return false; }
+                    @Override public void onDestroyActionMode(android.view.ActionMode mode) {
+                        selecting = false;
+                        ViewParent p = logText.getParent();
+                        if (p != null) p.requestDisallowInterceptTouchEvent(false);
+                    }
+                });
+
+                logText.setOnTouchListener((v, ev) -> {
+                    ViewParent p = v.getParent();
+                    switch (ev.getActionMasked()) {
+                        case android.view.MotionEvent.ACTION_DOWN:
+                        case android.view.MotionEvent.ACTION_MOVE:
+                            if (p != null) p.requestDisallowInterceptTouchEvent(selecting);
+                            break;
+                        case android.view.MotionEvent.ACTION_UP:
+                        case android.view.MotionEvent.ACTION_CANCEL:
+                            if (p != null) p.requestDisallowInterceptTouchEvent(false);
+                            break;
+                    }
+                    return false; // let TextView handle selection
+                });
             }
         }
     }
