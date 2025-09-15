@@ -349,7 +349,7 @@ public class CotExplorerDropDownReceiver extends DropDownReceiver implements
                         TextView showTextParam = (TextView) v;
                         manager.setText(showTextParam.getText());
                         Toast.makeText(v.getContext(),
-                                "copied the data", Toast.LENGTH_SHORT).show();
+                                "Copied to clipboard", Toast.LENGTH_SHORT).show();
                         return true;
                     }
                 });

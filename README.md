@@ -57,4 +57,3 @@ The Filter icon on the right side of the CoT Explorer pane allows the user to fi
 ## Known Issues
 
 * The Inspect button does not handle stacked map items and will only display the CoT XML for the topmost item.
-
