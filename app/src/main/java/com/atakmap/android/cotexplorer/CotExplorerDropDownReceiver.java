@@ -56,12 +56,20 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 public class CotExplorerDropDownReceiver extends DropDownReceiver implements
         OnStateListener, CommsLogger, View.OnClickListener {
@@ -314,24 +322,20 @@ public class CotExplorerDropDownReceiver extends DropDownReceiver implements
 
                 com.atakmap.coremap.log.Log.d(TAG, "Full MapItem dump: " + mi.toString());
 
-                com.atakmap.coremap.log.Log.d(TAG, "class: " + mi.getClass());
-                com.atakmap.coremap.log.Log.d(TAG, "type: " + mi.getType());
-
+                final MapItem itemToInspect = ATAKUtilities.findAssocShape(mi);
                 final CotEvent cotEvent = CotEventFactory
-                        .createCotEvent(mi);
+                        .createCotEvent(itemToInspect);
 
                 String val;
                 if (cotEvent != null)
                     val = cotEvent.toString();
-                else if (mi.hasMetaValue("nevercot"))
-                    val = "map item set to never persist (nevercot)";
                 else
                     val = "error turning a map item into CoT";
 
                 AlertDialog.Builder builderSingle = new AlertDialog.Builder(
                         getMapView().getContext());
                 TextView showText = new TextView(getMapView().getContext());
-                showText.setText(val);
+                showText.setText(prettyPrintXml(val));
                 showText.setTextIsSelectable(true);
                 showText.setPadding(32, 32, 32, 32); // Add padding (left, top, right, bottom) in pixels
                 showText.setOnLongClickListener(new View.OnLongClickListener() {
@@ -383,8 +387,6 @@ public class CotExplorerDropDownReceiver extends DropDownReceiver implements
                 inspectBtn.setSelected(!val);
             }
         });
-
-        CommsMapComponent.getInstance().registerCommsLogger(this);
     }
 
     private List<SpannableString> convertToSpannableList(List<String> logs) {
@@ -485,10 +487,6 @@ public class CotExplorerDropDownReceiver extends DropDownReceiver implements
         if (paused) return;
 
         new Handler(Looper.getMainLooper()).post(() -> {
-            synchronized (fullLog) {
-                fullLog.add(log); // Always add logs, even duplicates
-            }
-
             SpannableString spannableLog = new SpannableString(log);
 
             if (!cotFilter.isEmpty() && log.contains(cotFilter)) {
@@ -521,7 +519,7 @@ public class CotExplorerDropDownReceiver extends DropDownReceiver implements
         // Iterate through fullLog to filter the messages
         for (String log : fullLog) {
             Log.i(TAG, "Filtering log: " + log);
-            if (cotFilter.isEmpty() || log.contains("type='" + cotFilter + "'")) { // Apply filter to log type
+            if (cotFilter.isEmpty() || log.contains(cotFilter)) { // Apply filter to log type
                 SpannableString spannableLog = new SpannableString(log);
 
                 if (!cotFilter.isEmpty()) {
@@ -642,6 +640,26 @@ public class CotExplorerDropDownReceiver extends DropDownReceiver implements
             }
         };
         h.post(poll);
+    }
+
+    static String prettyPrintXml(String xml) {
+        if (xml == null) return null;
+        try {
+            TransformerFactory tf = TransformerFactory.newInstance();
+            // Some Android runtimes honor this:
+            try { tf.setAttribute("indent-number", 4); } catch (IllegalArgumentException ignored) {}
+            Transformer t = tf.newTransformer();
+            t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            t.setOutputProperty(OutputKeys.INDENT, "yes");
+            // Xalan-style indent hint (works on most Androids)
+            t.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+
+            StringWriter out = new StringWriter();
+            t.transform(new StreamSource(new StringReader(xml)), new StreamResult(out));
+            return out.toString().trim();
+        } catch (Exception e) {
+            return xml; // fallback: show raw if formatting fails
+        }
     }
 
     @Override

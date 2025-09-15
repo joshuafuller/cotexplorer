@@ -103,7 +103,6 @@ def supportedFlavors =
 
 android {
     compileSdk 35
-    namespace 'com.atakmap.android.cotexplorer.plugin'
 
     buildFeatures {
         buildConfig = true
@@ -204,6 +203,15 @@ android {
     }
 
     sourceSets {
+        main {
+
+            // It is strongly encouraged that plugin developers do not modify the archiveBaseName, version code logic and version
+            // name logic to provide for consistency within the community.
+            setProperty("archivesBaseName", "ATAK-Plugin-" + rootProject.name + "-" + PLUGIN_VERSION + "-" + getVersionName() + "-" + ATAK_VERSION)
+            defaultConfig.versionCode = getVersionCode()
+            defaultConfig.versionName = PLUGIN_VERSION + " (" + getVersionName() + ") - [" + ATAK_VERSION + "]"
+        }
+
         gov.java.srcDirs 'src/gov/java'
         gov.assets.srcDir 'src/gov/assets'
         gov.res.srcDir 'src/gov/res'
@@ -219,16 +227,12 @@ android {
 
     }
 
-    // ✅ Recommended: versionCode/versionName in defaultConfig
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 34
 
-        versionCode getVersionCode()
-        versionName "${PLUGIN_VERSION} (${getVersionName()}) - [${ATAK_VERSION}]"
-
         def runTasks = gradle.startParameter.taskNames
-        if (runTasks.toString().contains('bundle')) {
+        if(runTasks.toString().contains('bundle')) {
             ndk {
                 abiFilters "armeabi-v7a", "arm64-v8a"
             }
@@ -238,14 +242,7 @@ android {
             }
         }
     }
-
-    // ✅ archivesBaseName is top-level in android {}
-    archivesBaseName = "ATAK-Plugin-${rootProject.name}-${PLUGIN_VERSION}-${getVersionName()}-${ATAK_VERSION}"
-
-    lint {
-        abortOnError true
-        checkReleaseBuilds true
-    }
+    namespace 'com.atakmap.android.cotexplorer.plugin'
 }
 
 afterEvaluate {
