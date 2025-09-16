@@ -2,7 +2,11 @@
 
 # CoT Explorer
 
-Cursor on Target (CoT) Explorer is a plugin that logs incoming and outgoing CoT messages, and provides some additional tools as outlined below.
+Cursor on Target (CoT) Explorer is a plugin that logs incoming and outgoing CoT messages, and provides some additional tools as outlined below. To use CoT Explorer, load the plugin from TAK Package Management.
+<img src="https://github.com/user-attachments/assets/e8dbb1c8-a5fa-4204-9de2-8b89c3d661a8" width=50% height=50%>
+
+Once the plugin is loaded, view the logged CoT messages by selecting the CoT Explorer icon in the ATAK Overflow menu:
+<img src="https://github.com/user-attachments/assets/66f95758-4b08-4ff6-b414-8c87ade8e61a" width=50% height=50%> 
 
 <img src="https://github.com/user-attachments/assets/85b71ccb-167b-4f5b-a576-0453f707bec6" width=50% height=50%> 
 
