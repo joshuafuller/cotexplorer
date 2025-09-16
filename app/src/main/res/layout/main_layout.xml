@@ -1,67 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:scrollbarAlwaysDrawVerticalTrack="true"
+    android:layout_height="match_parent"
+    android:background="@android:color/black"
+    android:orientation="vertical"
     android:scrollbars="vertical">
 
-    <LinearLayout
-        android:orientation="vertical"
+    <!-- HorizontalScrollView for the top button bar -->
+    <HorizontalScrollView
         android:layout_width="match_parent"
-        android:layout_height="fill_parent">
+        android:layout_height="wrap_content"
+        android:fillViewport="true">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#444444"
-            android:orientation="horizontal">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#444444"
+        android:paddingTop="4dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-            <Button
-                android:id="@+id/sendBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="   Send   " />
-            <Button
-                android:id="@+id/saveBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="   Save   " />
-            <Button
-                android:id="@+id/filterBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="   Filter   " />
-            <Button
-                android:id="@+id/pauseBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="   Pause   " />
-            <Button
-                android:id="@+id/clearBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="   Clear   " />
-        </LinearLayout>
+        <Button
+            android:id="@+id/sendBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_margin="1dp"
+            android:text="Send" />
 
-        <LinearLayout
-            android:background="@color/white"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:orientation="vertical">
-            <TextView
-                android:id="@+id/cotexplorerlog"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="#000000"
-                android:paddingStart="10dp"
-                android:paddingTop="10dp"
-                android:paddingEnd="0dp"
-                android:paddingBottom="10dp"
-                android:clickable="true"
-                android:textIsSelectable="true"
-                android:textColor="@color/white" />
-        </LinearLayout>
+        <Button
+            android:id="@+id/saveBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_margin="1dp"
+            android:text="Save" />
+
+        <Button
+            android:id="@+id/pauseBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_margin="1dp"
+            android:text="Pause" />
+
+        <Button
+            android:id="@+id/clearBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_margin="1dp"
+            android:text="Clear" />
+
+        <Button
+            android:id="@+id/inspectBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_margin="1dp"
+            android:text="Inspect" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/filterBtn"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="1dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="Filter"
+            android:paddingTop="8dp"
+            android:paddingBottom="12dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_filter" />
     </LinearLayout>
-</ScrollView>
+    </HorizontalScrollView>
+
+    <!-- RecyclerView for logs -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/cotexplorerlog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:padding="10dp" />
+</LinearLayout>
